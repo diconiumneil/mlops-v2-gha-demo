@@ -1,0 +1,23 @@
+[tool.poetry]
+name = "demand-prediction"
+version = "0.1.0"
+description = ""
+authors = ["sinclnei <neil.sinclair@diconium.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+azureml-mlflow = "1.59.0"
+azure-ai-ml = "1.23.0"
+scikit-learn = "1.6.0"
+pandas = "2.2.3"
+joblib = "1.2.0"
+matplotlib = "3.10.0"
+ipykernel = "6.29.5"
+jupyter = "^1.1.1"
+seaborn = "0.13.2"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

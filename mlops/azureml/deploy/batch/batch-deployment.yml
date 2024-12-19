@@ -1,7 +1,7 @@
 $schema: https://azuremlschemas.azureedge.net/latest/batchDeployment.schema.json
 name: batch-dp
-endpoint_name: taxi-fare-batch
-model: azureml:taxi-model@latest
+endpoint_name: retail-demandfare-batch
+model: azureml:retail-demandmodel@latest
 compute: azureml:batch-cluster
 resources:
   instance_count: 1

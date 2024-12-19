@@ -13,36 +13,25 @@ import pandas as pd
 
 import mlflow
 
-TARGET_COL = "cost"
+TARGET_COL = "Units Sold"
 
-NUMERIC_COLS = [
-    "distance",
-    "dropoff_latitude",
-    "dropoff_longitude",
-    "passengers",
-    "pickup_latitude",
-    "pickup_longitude",
-    "pickup_weekday",
-    "pickup_month",
-    "pickup_monthday",
-    "pickup_hour",
-    "pickup_minute",
-    "pickup_second",
-    "dropoff_weekday",
-    "dropoff_month",
-    "dropoff_monthday",
-    "dropoff_hour",
-    "dropoff_minute",
-    "dropoff_second",
-]
-
-CAT_NOM_COLS = [
-    "store_forward",
-    "vendor",
-]
-
-CAT_ORD_COLS = [
-]
+NUMERIC_COLS = ['Inventory Level', 'Units Sold', 'Units Ordered', 'Price', 'Discount',
+       'Competitor Pricing', 'day_of_week', 'month', 'day_of_month',
+       'Weather Condition_Cloudy', 'Weather Condition_Rainy',
+       'Weather Condition_Snowy', 'Weather Condition_Sunny',
+       'Holiday/Promotion_0', 'Holiday/Promotion_1', 'Seasonality_Autumn',
+       'Seasonality_Spring', 'Seasonality_Summer', 'Seasonality_Winter',
+       'Store ID_S001', 'Store ID_S002', 'Store ID_S003', 'Store ID_S004',
+       'Store ID_S005', 'Units_Sold_Lag_1', 'Units_Sold_Lag_2',
+       'Units_Sold_Lag_3', 'Units_Sold_Lag_4', 'Units_Sold_Lag_5',
+       'Units_Sold_Lag_6', 'Units_Sold_Lag_7', 'Units_Sold_Lag_8',
+       'Units_Sold_Lag_9', 'Units_Sold_Lag_10', 'Units_Sold_Lag_11',
+       'Units_Sold_Lag_12', 'Units_Sold_Lag_13', 'Units_Sold_Lag_14',
+       'Units_Sold_Lag_15', 'Units_Sold_Lag_16', 'Units_Sold_Lag_17',
+       'Units_Sold_Lag_18', 'Units_Sold_Lag_19', 'Units_Sold_Lag_20',
+       'Units_Sold_Lag_21', 'Units_Sold_Lag_22', 'Units_Sold_Lag_23',
+       'Units_Sold_Lag_24', 'Units_Sold_Lag_25', 'Units_Sold_Lag_26',
+       'Units_Sold_Lag_27']
 
 def parse_args():
     '''Parse input arguments'''
@@ -65,6 +54,41 @@ def log_training_data(df, table_name):
     collector = Online_Collector(table_name)
     collector.batch_collect(df)
 
+def create_features(data: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+    """Function that prepares the data for training
+    
+    Args: 
+        data: pd.DataFrame: Raw data
+    
+    Returns:
+        tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]: Train, validation and test datasets
+    """
+    
+    data_sample = data[
+        (data["Product ID"] == "P0001")
+    ].copy()
+
+    
+    data_sample.loc[:, "day_of_week"] = pd.to_datetime(data_sample["Date"]).dt.dayofweek
+    data_sample.loc[:, "month"] = pd.to_datetime(data_sample["Date"]).dt.month
+    data_sample.loc[:, "day_of_month"] = pd.to_datetime(data_sample["Date"]).dt.day
+
+    data_sample.loc[:, "competitor_price_ratio"] = data_sample["Price"] / data_sample["Competitor Pricing"]
+
+    data_sample = pd.get_dummies(data_sample, columns=["Weather Condition", "Holiday/Promotion", "Seasonality", "Store ID"])
+    data_sample.drop(["Region", "Product ID", "Category", "Demand Forecast", "Date"], axis=1, inplace=True)
+
+    for lag in range(1, 28):
+        data_sample[f"Units_Sold_Lag_{lag}"] = data_sample["Units Sold"].shift(lag)
+    data_sample.dropna(inplace=True)
+
+    data_sample = data_sample[NUMERIC_COLS + [TARGET_COL]]
+    train = data_sample.iloc[:int(0.7*len(data_sample)), :]
+    val = data_sample.iloc[int(0.7*len(data_sample)):int(0.85*len(data_sample)), :]
+    test = data_sample.iloc[int(0.85*len(data_sample)):, :]
+
+    return train, val, test
+
 def main(args):
     '''Read, split, and save datasets'''
 
@@ -72,22 +96,15 @@ def main(args):
     # -------------------------------------- #
 
     data = pd.read_csv((Path(args.raw_data)))
-    data = data[NUMERIC_COLS + CAT_NOM_COLS + CAT_ORD_COLS + [TARGET_COL]]
+    
 
     # ------------- Split Data ------------- #
     # -------------------------------------- #
 
     # Split data into train, val and test datasets
 
-    random_data = np.random.rand(len(data))
 
-    msk_train = random_data < 0.7
-    msk_val = (random_data >= 0.7) & (random_data < 0.85)
-    msk_test = random_data >= 0.85
-
-    train = data[msk_train]
-    val = data[msk_val]
-    test = data[msk_test]
+    train, val, test = create_features(data)
 
     mlflow.log_metric('train size', train.shape[0])
     mlflow.log_metric('val size', val.shape[0])

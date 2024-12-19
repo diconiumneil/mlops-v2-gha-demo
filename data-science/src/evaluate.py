@@ -19,36 +19,25 @@ import mlflow.sklearn
 import mlflow.pyfunc
 from mlflow.tracking import MlflowClient
 
-TARGET_COL = "cost"
+TARGET_COL = "Units Sold"
 
-NUMERIC_COLS = [
-    "distance",
-    "dropoff_latitude",
-    "dropoff_longitude",
-    "passengers",
-    "pickup_latitude",
-    "pickup_longitude",
-    "pickup_weekday",
-    "pickup_month",
-    "pickup_monthday",
-    "pickup_hour",
-    "pickup_minute",
-    "pickup_second",
-    "dropoff_weekday",
-    "dropoff_month",
-    "dropoff_monthday",
-    "dropoff_hour",
-    "dropoff_minute",
-    "dropoff_second",
-]
-
-CAT_NOM_COLS = [
-    "store_forward",
-    "vendor",
-]
-
-CAT_ORD_COLS = [
-]
+NUMERIC_COLS = ['Inventory Level', 'Units Sold', 'Units Ordered', 'Price', 'Discount',
+       'Competitor Pricing', 'day_of_week', 'month', 'day_of_month',
+       'Weather Condition_Cloudy', 'Weather Condition_Rainy',
+       'Weather Condition_Snowy', 'Weather Condition_Sunny',
+       'Holiday/Promotion_0', 'Holiday/Promotion_1', 'Seasonality_Autumn',
+       'Seasonality_Spring', 'Seasonality_Summer', 'Seasonality_Winter',
+       'Store ID_S001', 'Store ID_S002', 'Store ID_S003', 'Store ID_S004',
+       'Store ID_S005', 'Units_Sold_Lag_1', 'Units_Sold_Lag_2',
+       'Units_Sold_Lag_3', 'Units_Sold_Lag_4', 'Units_Sold_Lag_5',
+       'Units_Sold_Lag_6', 'Units_Sold_Lag_7', 'Units_Sold_Lag_8',
+       'Units_Sold_Lag_9', 'Units_Sold_Lag_10', 'Units_Sold_Lag_11',
+       'Units_Sold_Lag_12', 'Units_Sold_Lag_13', 'Units_Sold_Lag_14',
+       'Units_Sold_Lag_15', 'Units_Sold_Lag_16', 'Units_Sold_Lag_17',
+       'Units_Sold_Lag_18', 'Units_Sold_Lag_19', 'Units_Sold_Lag_20',
+       'Units_Sold_Lag_21', 'Units_Sold_Lag_22', 'Units_Sold_Lag_23',
+       'Units_Sold_Lag_24', 'Units_Sold_Lag_25', 'Units_Sold_Lag_26',
+       'Units_Sold_Lag_27']
 
 def parse_args():
     '''Parse input arguments'''
@@ -72,7 +61,7 @@ def main(args):
 
     # Split the data into inputs and outputs
     y_test = test_data[TARGET_COL]
-    X_test = test_data[NUMERIC_COLS + CAT_NOM_COLS + CAT_ORD_COLS]
+    X_test = test_data[NUMERIC_COLS]
 
     # Load the model from input port
     model =  mlflow.sklearn.load_model(args.model_input) 
