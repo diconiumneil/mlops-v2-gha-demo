@@ -23,7 +23,7 @@ variables:
   # DO NOT TOUCH
 
   # For pipeline reference
-  resource_group: RG-$NeilSinclair
+  resource_group: RG-NeilSinclair
   aml_workspace: neil-workspace
   application_insights: mlw-$(namespace)-$(postfix)$(environment)
   key_vault: kv-$(namespace)-$(postfix)$(environment)
